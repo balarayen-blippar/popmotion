@@ -3,29 +3,29 @@ import { angle, distance } from '@popmotion/popcorn';
 import action, { Action } from '../../action';
 import listen from '../listen';
 import { PointerPoint, PointerProps } from '../pointer/types';
-import { defaultPointerPos, eventToPoint } from '../pointer/utils';
+// import { defaultPointerPos, eventToPoint } from '../pointer/utils';
+import { defaultPointerPos } from '../pointer/utils';
 
 const points: PointerPoint[] = [defaultPointerPos()];
 let isTouchDevice = false;
 
 if (typeof document !== 'undefined') {
-  const updatePointsLocation = ({ touches }: TouchEvent) => {
-    isTouchDevice = true;
-    const numTouches = touches.length;
-
-    // TODO: Optimisation would be to provide existing points to `eventToPoint`
-    points.length = 0;
-
-    for (let i = 0; i < numTouches; i++) {
-      const thisTouch = touches[i];
-      points.push(eventToPoint(thisTouch));
-    }
-  };
-
-  listen(document, 'touchstart touchmove', {
-    passive: true,
-    capture: true
-  }).start(updatePointsLocation);
+  // BLIPPAR: BALA: This code crashes unecessarily when handcontroller is triggered in MagicLeap 2
+  // Disabling it as multitouch is not used in webar app
+  // const updatePointsLocation = ({ touches }: TouchEvent) => {
+  //   isTouchDevice = true;
+  //   const numTouches = touches.length;
+  //   // TODO: Optimisation would be to provide existing points to `eventToPoint`
+  //   points.length = 0;
+  //   for (let i = 0; i < numTouches; i++) {
+  //     const thisTouch = touches[i];
+  //     points.push(eventToPoint(thisTouch));
+  //   }
+  // };
+  // listen(document, 'touchstart touchmove', {
+  //   passive: true,
+  //   capture: true
+  // }).start(updatePointsLocation);
 }
 
 const multitouch = ({
