@@ -1,4 +1,4 @@
-import onNextFrame from './on-next-frame';
+import { onNextFrame, onNextXRFrame } from './on-next-frame';
 import createStep from './create-render-step';
 import { Process, StepId, SyncApi, FrameData } from './types';
 
@@ -17,34 +17,25 @@ const stepsOrder: StepId[] = ['read', 'update', 'render', 'postRender'];
 
 const setWillRunNextFrame = (willRun: boolean) => (willRunNextFrame = willRun);
 
-const steps = stepsOrder.reduce(
-  (acc, key) => {
-    acc[key] = createStep(setWillRunNextFrame);
-    return acc;
-  },
-  {} as SyncApi['steps']
-);
+const steps = stepsOrder.reduce((acc, key) => {
+  acc[key] = createStep(setWillRunNextFrame);
+  return acc;
+}, {} as SyncApi['steps']);
 
-const sync = stepsOrder.reduce(
-  (acc, key) => {
-    const step = steps[key];
-    acc[key] = (process: Process, keepAlive = false, immediate = false) => {
-      if (!willRunNextFrame) startLoop();
-      step.schedule(process, keepAlive, immediate);
-      return process;
-    };
-    return acc;
-  },
-  {} as SyncApi['sync']
-);
+const sync = stepsOrder.reduce((acc, key) => {
+  const step = steps[key];
+  acc[key] = (process: Process, keepAlive = false, immediate = false) => {
+    if (!willRunNextFrame) startLoop();
+    step.schedule(process, keepAlive, immediate);
+    return process;
+  };
+  return acc;
+}, {} as SyncApi['sync']);
 
-const cancelSync = stepsOrder.reduce(
-  (acc, key) => {
-    acc[key] = steps[key].cancel;
-    return acc;
-  },
-  {} as SyncApi['cancelSync']
-);
+const cancelSync = stepsOrder.reduce((acc, key) => {
+  acc[key] = steps[key].cancel;
+  return acc;
+}, {} as SyncApi['cancelSync']);
 
 const processStep = (stepId: StepId) => steps[stepId].process(frame);
 
@@ -67,7 +58,9 @@ const processFrame = (timestamp: number) => {
 
   if (willRunNextFrame) {
     useDefaultElapsed = false;
-    onNextFrame(processFrame);
+    typeof window !== 'undefined' && (<any>window).blippxrsession
+      ? onNextXRFrame(processFrame)
+      : onNextFrame(processFrame);
   }
 };
 
@@ -75,7 +68,10 @@ const startLoop = () => {
   willRunNextFrame = true;
   useDefaultElapsed = true;
 
-  if (!isProcessing) onNextFrame(processFrame);
+  if (!isProcessing)
+    typeof window !== 'undefined' && (<any>window).blippxrsession
+      ? onNextXRFrame(processFrame)
+      : onNextFrame(processFrame);
 };
 
 const getFrameData = () => frame;

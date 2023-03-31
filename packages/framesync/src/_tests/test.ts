@@ -1,9 +1,9 @@
 import sync, { cancelSync } from '../';
-import onNextFrame from '../on-next-frame';
+import { onNextFrame } from '../on-next-frame';
 
 describe('onNextFrame', () => {
   it('fires callback on following frame', () => {
-    return new Promise((resolve: Function) => onNextFrame(resolve));
+    return new Promise((resolve: FrameRequestCallback) => onNextFrame(resolve));
   });
 });
 
@@ -80,11 +80,10 @@ describe('sync', () => {
       sync.update(({ delta: defaultElapsed }) => {
         setTimeout(
           () =>
-            sync.update(
-              ({ delta }) =>
-                delta === defaultElapsed
-                  ? resolve()
-                  : reject(defaultElapsed, delta)
+            sync.update(({ delta }) =>
+              delta === defaultElapsed
+                ? resolve()
+                : reject(defaultElapsed, delta)
             ),
           50
         );
